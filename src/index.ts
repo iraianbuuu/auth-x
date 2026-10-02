@@ -1,17 +1,10 @@
+import { decodeBase32 } from "./auth/base32.ts";
 import { generateTotp } from "./auth/totp.ts";
 
-const secret = Buffer.from("12345678901234567890");
+const key = decodeBase32("QKBZYA7LSM4757HWRPCQTTIJNI4XTZAB");
 
-const timestamps = [
-  59,
-  1111111109,
-  1111111111,
-  1234567890,
-  2000000000,
-  20000000000,
-];
+const unixSeconds = Math.floor(Date.now() / 1000);
 
-for (const timestamp of timestamps) {
-  const otp = generateTotp(secret, timestamp);
-  console.log(timestamp, otp);
-}
+const otp = generateTotp(key, unixSeconds);
+
+console.log("My OTP:", otp);
