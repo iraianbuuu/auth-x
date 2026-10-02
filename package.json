@@ -5,21 +5,28 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --import tsx --test \"tests/**/*.test.ts\"",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/jest": "^30.0.0",
-    "@types/node": "^26.6.3",
+    "@biomejs/biome": "2.5.15",
+    "@types/node": "^22.20.5",
     "@types/qrcode": "^1.5.6",
-    "jest": "^30.5.2",
-    "ts-jest": "^29.4.14",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3"
   },
   "dependencies": {
     "qrcode": "^1.5.4"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
