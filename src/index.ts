@@ -5,6 +5,6 @@ const key = decodeBase32("QKBZYA7LSM4757HWRPCQTTIJNI4XTZAB");
 
 const unixSeconds = Math.floor(Date.now() / 1000);
 
-const otp = generateTotp(key, unixSeconds);
+const otp = generateTotp(key, { timestamp: unixSeconds });
 
 console.log("My OTP:", otp);

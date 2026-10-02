@@ -1,18 +1,33 @@
 import { createHmac } from "node:crypto";
+import { OtpError } from "./errors.ts";
+import { resolveOptions, type TotpOptions } from "./types.ts";
 
-const DIGITS = 6;
+export function generateHotp(
+  key: Buffer,
+  counter: number,
+  options: Partial<TotpOptions> = {},
+): string {
+  const { algorithm, digits } = resolveOptions(options);
 
-export function generateHmac(key: Buffer, counter: Buffer): Buffer {
-  return createHmac("sha1", key).update(counter).digest();
-}
+  if (key.length === 0) {
+    throw new OtpError("INVALID_SECRET", "Key must not be empty");
+  }
+  if (!Number.isSafeInteger(counter) || counter < 0) {
+    throw new OtpError(
+      "INVALID_OPTIONS",
+      "Counter must be a non-negative integer",
+    );
+  }
 
-export function generateHotp(key: Buffer, counter: Buffer): string {
-  const hmac = generateHmac(key, counter);
+  const message = Buffer.alloc(8);
+  message.writeBigUInt64BE(BigInt(counter));
+  const hmac = createHmac(algorithm.toLowerCase(), key)
+    .update(message)
+    .digest();
 
-  const lastByte = hmac[hmac.length - 1] as number;
-  const offset = lastByte & 0x0f;
+  const offset = hmac.readUInt8(hmac.length - 1) & 0x0f;
 
   const truncated = hmac.readUInt32BE(offset) & 0x7fffffff;
 
-  return String(truncated % 10 ** DIGITS).padStart(DIGITS, "0");
+  return String(truncated % 10 ** digits).padStart(digits, "0");
 }

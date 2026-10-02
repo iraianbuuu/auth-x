@@ -1,16 +1,20 @@
+import { OtpError } from "./errors.ts";
 import { generateHotp } from "./hotp.ts";
+import { resolveOptions, type TotpOptions } from "./types.ts";
 
-const TIME_STEP_SECONDS = 30;
+type TotpInput = Partial<TotpOptions> & { timestamp?: number };
 
-function timeToCounter(unixSeconds: number): Buffer {
-  const step = Math.floor(unixSeconds / TIME_STEP_SECONDS);
+export function generateTotp(key: Buffer, input: TotpInput = {}): string {
+  const { timestamp = Math.floor(Date.now() / 1000), ...options } = input;
+  const resolved = resolveOptions(options);
 
-  const counter = Buffer.alloc(8);
-  counter.writeBigUInt64BE(BigInt(step), 0);
-  return counter;
-}
+  if (!Number.isSafeInteger(timestamp) || timestamp < 0) {
+    throw new OtpError(
+      "INVALID_OPTIONS",
+      "Timestamp must be a non-negative integer of Unix seconds",
+    );
+  }
 
-export function generateTotp(key: Buffer, unixSeconds: number): string {
-  const counter = timeToCounter(unixSeconds);
-  return generateHotp(key, counter);
+  const counter = Math.floor(timestamp / resolved.period);
+  return generateHotp(key, counter, resolved);
 }
