@@ -1,19 +1,26 @@
-import { randomBytes } from "node:crypto";
+import { OtpError } from "./errors.ts";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-const SECRET_BYTES = 20;
 
 export function decodeBase32(input: string): Buffer {
-  const cleaned = input.replace(/=/g, "").toUpperCase();
+  const cleaned = input.replace(/\s/g, "").replace(/=+$/, "").toUpperCase();
 
   let bitstream = "";
   for (const char of cleaned) {
     const value = ALPHABET.indexOf(char);
 
     if (value === -1) {
-      throw new Error(`Invalid Base32 character: ${char}`);
+      throw new OtpError("INVALID_SECRET", `Invalid Base32 character: ${char}`);
     }
     bitstream += value.toString(2).padStart(5, "0");
+  }
+
+  const leftover = bitstream.length % 8;
+  if (leftover >= 5) {
+    throw new OtpError("INVALID_SECRET", "Invalid Base32 length");
+  }
+  if (bitstream.slice(bitstream.length - leftover).includes("1")) {
+    throw new OtpError("INVALID_SECRET", "Invalid Base32 padding bits");
   }
 
   const bytes: number[] = [];
@@ -39,9 +46,4 @@ export function encodeBase32(input: Buffer): string {
   }
 
   return result;
-}
-
-export function generateSecret(): string {
-  const key = randomBytes(SECRET_BYTES);
-  return encodeBase32(key);
 }
