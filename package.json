@@ -14,6 +14,7 @@
     "dist",
     "src"
   ],
+  "sideEffects": false,
   "scripts": {
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
     "coverage": "node --import tsx --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-lines=95 --test-coverage-branches=95 --test-coverage-functions=95 \"tests/**/*.test.ts\"",
@@ -24,9 +25,26 @@
     "dev": "tsx examples/demo.ts",
     "prepack": "npm run build"
   },
-  "keywords": [],
+  "keywords": [
+    "totp",
+    "2fa",
+    "two-factor",
+    "mfa",
+    "otp",
+    "rfc6238",
+    "authenticator",
+    "recovery-codes"
+  ],
   "author": "Iraianbu",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iraianbuuu/auth-x.git"
+  },
+  "homepage": "https://github.com/iraianbuuu/auth-x#readme",
+  "bugs": {
+    "url": "https://github.com/iraianbuuu/auth-x/issues"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "@types/node": "^22.20.5",
@@ -35,9 +53,5 @@
   },
   "engines": {
     "node": ">=22"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/iraianbuuu/auth-x.git"
   }
 }
