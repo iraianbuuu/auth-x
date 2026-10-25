@@ -6,7 +6,13 @@ export interface Enrollment {
   uri: string;
 }
 
-// Render `uri` as a QR code in the app for the user to scan.
+/**
+ * Creates a new random secret and its `otpauth://` URI. Render `uri` as a QR
+ * code for the user to scan, and store `secret` encrypted with
+ * `encryptSecret`.
+ *
+ * @throws {OtpError} The same errors as {@link createOtpAuthUri}.
+ */
 export function createEnrollment(
   params: Omit<OtpAuthParams, "secret">,
 ): Enrollment {

@@ -2,6 +2,13 @@ import { OtpError } from "./errors.ts";
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
+/**
+ * Decodes an RFC 4648 base32 string, such as a TOTP secret, to bytes.
+ * Whitespace, lowercase and trailing `=` padding are accepted.
+ *
+ * @throws {OtpError} `INVALID_SECRET` for invalid characters, an impossible
+ * length or non-zero padding bits.
+ */
 export function decodeBase32(input: string): Buffer {
   const cleaned = input.replace(/\s/g, "").replace(/=+$/, "").toUpperCase();
 
@@ -32,6 +39,7 @@ export function decodeBase32(input: string): Buffer {
   return Buffer.from(bytes);
 }
 
+/** Encodes bytes as RFC 4648 base32 without `=` padding. */
 export function encodeBase32(input: Buffer): string {
   let bitstream = "";
 

@@ -8,10 +8,14 @@ const IV_BYTES = 12;
 const TAG_BYTES = 16;
 const KEY_ID_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
 
+/**
+ * The encryption keys, by key ID. Key IDs are 1 to 32 letters, digits, `-`
+ * or `_`, for example `"2026-10"`. Each key is 32 random bytes.
+ */
 export interface Keyring {
-  // ID of the key that encrypts new payloads.
+  /** ID of the key that encrypts new payloads. */
   current: string;
-  // Every key that may still be needed to decrypt existing payloads.
+  /** Every key that may still be needed to decrypt existing payloads. */
   keys: Record<string, Buffer>;
 }
 
@@ -37,6 +41,16 @@ function additionalData(keyId: string, context: string): Buffer {
   return Buffer.from(`${VERSION}:${keyId}:${context}`);
 }
 
+/**
+ * Encrypts a TOTP secret for storage with AES-256-GCM and the keyring's
+ * current key. Returns `v1:<keyId>:<iv>:<tag>:<ciphertext>`; the IV is random,
+ * so the same secret encrypts differently every time.
+ *
+ * @param context Binds the payload to its owner, for example
+ * `user:${user.id}`. The same value must be passed to {@link decryptSecret}.
+ * @throws {OtpError} `INVALID_KEY` if the current key is missing, not 32 bytes
+ * or has an invalid ID; `INVALID_SECRET` if the secret is empty.
+ */
 export function encryptSecret(
   secret: string,
   keyring: Keyring,
@@ -65,6 +79,14 @@ export function encryptSecret(
   ].join(":");
 }
 
+/**
+ * Decrypts a payload from {@link encryptSecret} with the key named in it.
+ *
+ * @param context The value passed to {@link encryptSecret}.
+ * @throws {OtpError} `DECRYPTION_FAILED` if the payload is malformed or was
+ * changed, its key ID is not in the keyring, or the key or context is wrong;
+ * `INVALID_KEY` if the named key is not 32 bytes.
+ */
 export function decryptSecret(
   payload: string,
   keyring: Keyring,
@@ -112,8 +134,11 @@ export function decryptSecret(
   }
 }
 
-// True when the payload was encrypted with a key other than keyring.current,
-// so the caller should decrypt it and encrypt it again during key rotation.
+/**
+ * Returns true when the payload was encrypted with a key other than
+ * `keyring.current`, so it should be decrypted and encrypted again during key
+ * rotation.
+ */
 export function needsReencryption(payload: string, keyring: Keyring): boolean {
   return payload.split(":")[1] !== keyring.current;
 }

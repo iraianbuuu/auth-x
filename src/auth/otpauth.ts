@@ -8,9 +8,13 @@ import {
 } from "./types.ts";
 
 export interface OtpAuthParams {
+  /** Base32 secret, for example from `generateSecret`. */
   secret: string;
+  /** The user's account name shown in the authenticator app, such as an email. */
   account: string;
+  /** The service name shown in the authenticator app. */
   issuer?: string;
+  /** TOTP settings; only values that differ from {@link DEFAULTS} are written. */
   options?: Partial<TotpOptions>;
 }
 
@@ -24,6 +28,14 @@ function invalidUri(message: string): OtpError {
   return new OtpError("INVALID_URI", message);
 }
 
+/**
+ * Builds the `otpauth://totp/...` URI that authenticator apps read from a QR
+ * code.
+ *
+ * @throws {OtpError} `INVALID_SECRET` for a bad secret; `INVALID_OPTIONS` for
+ * bad options; `INVALID_URI` if the account is empty or the issuer or account
+ * contains `:`.
+ */
 export function createOtpAuthUri({
   secret,
   account,
@@ -51,6 +63,14 @@ export function createOtpAuthUri({
   return `otpauth://totp/${label}?${query}`;
 }
 
+/**
+ * Parses an `otpauth://totp/...` URI. The returned options are complete, with
+ * defaults filled in. The issuer comes from the `issuer` parameter or, if that
+ * is missing, the label prefix.
+ *
+ * @throws {OtpError} `INVALID_URI` for a malformed URI, `INVALID_SECRET` for
+ * a bad secret, `INVALID_OPTIONS` for bad options.
+ */
 export function parseOtpAuthUri(uri: string): ParsedOtpAuth {
   let url: URL;
   try {

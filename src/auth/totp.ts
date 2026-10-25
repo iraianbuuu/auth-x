@@ -3,9 +3,17 @@ import { OtpError } from "./errors.ts";
 import { generateHotp } from "./hotp.ts";
 import { resolveOptions, type TotpOptions } from "./types.ts";
 
-type TotpInput = Partial<TotpOptions> & { timestamp?: number };
+type TotpInput = Partial<TotpOptions> & {
+  /** Unix time in whole seconds, not milliseconds. Defaults to now. */
+  timestamp?: number;
+};
 
-type VerifyInput = TotpInput & { window?: number; afterStep?: number };
+type VerifyInput = TotpInput & {
+  /** Steps accepted on each side of the current one, from 0 to 10. Defaults to 1. */
+  window?: number;
+  /** The step returned by the last successful verification. Steps at or before it are rejected. */
+  afterStep?: number;
+};
 
 // Each extra step is two more HMACs and widens the replay window.
 const MAX_WINDOW = 10;
@@ -20,12 +28,29 @@ function timeStep(timestamp: number, period: number): number {
   return Math.floor(timestamp / period);
 }
 
+/**
+ * Generates the TOTP code for a key at a point in time (RFC 6238).
+ *
+ * @param key The decoded secret, for example `decodeBase32(secret)`.
+ * @throws {OtpError} `INVALID_OPTIONS` for bad options or timestamp;
+ * `INVALID_SECRET` for a key shorter than 16 bytes.
+ */
 export function generateTotp(key: Buffer, input: TotpInput = {}): string {
   const { timestamp = Math.floor(Date.now() / 1000), ...options } = input;
   const resolved = resolveOptions(options);
   return generateHotp(key, timeStep(timestamp, resolved.period), resolved);
 }
 
+/**
+ * Checks a code typed by the user. Compares in constant time and returns the
+ * matched time step, or `null` for a wrong, expired, reused or malformed code.
+ * Store the returned step and pass it back as `afterStep` next time so the
+ * same code cannot be used twice.
+ *
+ * @param key The decoded secret, for example `decodeBase32(secret)`.
+ * @throws {OtpError} `INVALID_OPTIONS` for bad options; `INVALID_SECRET` for a
+ * key shorter than 16 bytes.
+ */
 export function verifyTotp(
   key: Buffer,
   code: string,

@@ -5,11 +5,15 @@ const ALGORITHMS = ["SHA1", "SHA256", "SHA512"] as const;
 export type HashAlgorithm = (typeof ALGORITHMS)[number];
 
 export type TotpOptions = {
+  /** HMAC hash. Most authenticator apps only support `"SHA1"`. */
   algorithm: HashAlgorithm;
+  /** Code length. */
   digits: 6 | 8;
+  /** Seconds each code is valid. */
   period: number;
 };
 
+/** The settings authenticator apps assume: SHA-1, 6 digits, 30 seconds. */
 export const DEFAULTS: TotpOptions = {
   algorithm: "SHA1",
   digits: 6,

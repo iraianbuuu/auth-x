@@ -5,6 +5,7 @@ export type OtpErrorCode =
   | "INVALID_KEY"
   | "DECRYPTION_FAILED";
 
+/** Thrown for invalid input. Check `code` rather than the message. */
 export class OtpError extends Error {
   readonly code: OtpErrorCode;
 
