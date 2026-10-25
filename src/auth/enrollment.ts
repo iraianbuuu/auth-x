@@ -1,17 +1,15 @@
 import { createOtpAuthUri, type OtpAuthParams } from "./otpauth.ts";
-import { toQrDataUrl } from "./qrcode.ts";
 import { generateSecret } from "./secret.ts";
 
 export interface Enrollment {
   secret: string;
   uri: string;
-  qrDataUrl: string;
 }
 
-export async function createEnrollment(
+// Render `uri` as a QR code in the app for the user to scan.
+export function createEnrollment(
   params: Omit<OtpAuthParams, "secret">,
-): Promise<Enrollment> {
+): Enrollment {
   const secret = generateSecret();
-  const uri = createOtpAuthUri({ ...params, secret });
-  return { secret, uri, qrDataUrl: await toQrDataUrl(uri) };
+  return { secret, uri: createOtpAuthUri({ ...params, secret }) };
 }

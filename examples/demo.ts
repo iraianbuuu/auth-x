@@ -10,21 +10,19 @@ import {
   verifyTotp,
 } from "@/index.ts";
 
-// In a real app this key comes from a secrets manager, not randomBytes.
-const encryptionKey = randomBytes(32);
+// In a real app the keys come from a secrets manager, not randomBytes.
+const keyring = { current: "2026-10", keys: { "2026-10": randomBytes(32) } };
 
-const { secret, uri } = await createEnrollment({
+const { secret, uri } = createEnrollment({
   account: "alice@example.com",
   issuer: "auth-x demo",
 });
-const storedSecret = encryptSecret(secret, encryptionKey, "user:alice");
+const storedSecret = encryptSecret(secret, keyring, "user:alice");
 const { codes, hashes } = generateRecoveryCodes();
-console.log("Scan this URI:", uri);
+console.log("Render this URI as a QR code:", uri);
 console.log("Stored secret:", storedSecret);
 
-const key = decodeBase32(
-  decryptSecret(storedSecret, encryptionKey, "user:alice"),
-);
+const key = decodeBase32(decryptSecret(storedSecret, keyring, "user:alice"));
 const code = generateTotp(key);
 const step = verifyTotp(key, code);
 console.log(`Code ${code} verified at step ${step}`);

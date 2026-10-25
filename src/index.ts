@@ -2,6 +2,8 @@ export { decodeBase32, encodeBase32 } from "./auth/base32.ts";
 export {
   decryptSecret,
   encryptSecret,
+  type Keyring,
+  needsReencryption,
 } from "./auth/encryption.ts";
 export { createEnrollment, type Enrollment } from "./auth/enrollment.ts";
 export { OtpError, type OtpErrorCode } from "./auth/errors.ts";
@@ -11,7 +13,6 @@ export {
   type ParsedOtpAuth,
   parseOtpAuthUri,
 } from "./auth/otpauth.ts";
-export { toQrDataUrl } from "./auth/qrcode.ts";
 export {
   generateRecoveryCodes,
   type RecoveryCodes,

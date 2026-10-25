@@ -15,23 +15,23 @@ test("the entry point exports exactly the public API", () => {
     "generateRecoveryCodes",
     "generateSecret",
     "generateTotp",
+    "needsReencryption",
     "parseOtpAuthUri",
-    "toQrDataUrl",
     "verifyRecoveryCode",
     "verifyTotp",
   ]);
 });
 
-test("the entry point runs the full enrollment and login flow", async () => {
-  const key = Buffer.alloc(32, 7);
-  const { secret, uri } = await authX.createEnrollment({
+test("the entry point runs the full enrollment and login flow", () => {
+  const keyring = { current: "k1", keys: { k1: Buffer.alloc(32, 7) } };
+  const { secret, uri } = authX.createEnrollment({
     account: "alice",
     issuer: "Acme",
   });
-  const stored = authX.encryptSecret(secret, key, "user:alice");
+  const stored = authX.encryptSecret(secret, keyring, "user:alice");
 
   const totpKey = authX.decodeBase32(
-    authX.decryptSecret(stored, key, "user:alice"),
+    authX.decryptSecret(stored, keyring, "user:alice"),
   );
   const { options } = authX.parseOtpAuthUri(uri);
   const timestamp = 1111111111;

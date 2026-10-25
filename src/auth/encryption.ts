@@ -6,52 +6,86 @@ const ALGORITHM = "aes-256-gcm";
 const KEY_BYTES = 32;
 const IV_BYTES = 12;
 const TAG_BYTES = 16;
+const KEY_ID_PATTERN = /^[A-Za-z0-9_-]{1,32}$/;
 
-function checkKey(key: Buffer): void {
-  if (key.length !== KEY_BYTES) {
+export interface Keyring {
+  // ID of the key that encrypts new payloads.
+  current: string;
+  // Every key that may still be needed to decrypt existing payloads.
+  keys: Record<string, Buffer>;
+}
+
+function decryptionFailed(message = "Could not decrypt the secret"): OtpError {
+  return new OtpError("DECRYPTION_FAILED", message);
+}
+
+function checkKey(key: Buffer | undefined, id: string): Buffer {
+  if (key?.length !== KEY_BYTES) {
     throw new OtpError(
       "INVALID_KEY",
-      `Encryption key must be ${KEY_BYTES} bytes`,
+      `Key "${id}" must be a ${KEY_BYTES}-byte Buffer`,
     );
   }
+  return key;
 }
 
-function decryptionFailed(): OtpError {
-  return new OtpError("DECRYPTION_FAILED", "Could not decrypt the secret");
+// The version and key ID are authenticated along with the caller's context,
+// so editing either one in a stored payload makes decryption fail. `context`
+// binds the payload to one owner (for example a user ID), so a payload copied
+// to another user's row fails to decrypt there.
+function additionalData(keyId: string, context: string): Buffer {
+  return Buffer.from(`${VERSION}:${keyId}:${context}`);
 }
 
-// `context` is bound to the payload as additional authenticated data, so a
-// payload copied to another user's row fails to decrypt there.
 export function encryptSecret(
   secret: string,
-  key: Buffer,
+  keyring: Keyring,
   context = "",
 ): string {
-  checkKey(key);
+  const keyId = keyring.current;
+  if (!KEY_ID_PATTERN.test(keyId)) {
+    throw new OtpError(
+      "INVALID_KEY",
+      "Key ID must be 1 to 32 letters, digits, dashes or underscores",
+    );
+  }
+  const key = checkKey(keyring.keys[keyId], keyId);
   if (!secret) throw new OtpError("INVALID_SECRET", "Secret must not be empty");
 
   const iv = randomBytes(IV_BYTES);
   const cipher = createCipheriv(ALGORITHM, key, iv);
-  cipher.setAAD(Buffer.from(context));
+  cipher.setAAD(additionalData(keyId, context));
   const ciphertext = Buffer.concat([cipher.update(secret), cipher.final()]);
   const tag = cipher.getAuthTag();
 
-  return [VERSION, iv, tag, ciphertext]
-    .map((part) => (typeof part === "string" ? part : part.toString("base64")))
-    .join(":");
+  return [
+    VERSION,
+    keyId,
+    ...[iv, tag, ciphertext].map((b) => b.toString("base64")),
+  ].join(":");
 }
 
 export function decryptSecret(
   payload: string,
-  key: Buffer,
+  keyring: Keyring,
   context = "",
 ): string {
-  checkKey(key);
-
   const parts = payload.split(":");
-  if (parts.length !== 4 || parts[0] !== VERSION) throw decryptionFailed();
+  const [version, keyId = ""] = parts;
+  if (
+    parts.length !== 5 ||
+    version !== VERSION ||
+    !KEY_ID_PATTERN.test(keyId)
+  ) {
+    throw decryptionFailed();
+  }
+  if (!Object.hasOwn(keyring.keys, keyId)) {
+    throw decryptionFailed(`Key "${keyId}" is not in the keyring`);
+  }
+  const key = checkKey(keyring.keys[keyId], keyId);
+
   const [iv, tag, ciphertext] = parts
-    .slice(1)
+    .slice(2)
     .map((part) => Buffer.from(part, "base64"));
   if (
     iv?.length !== IV_BYTES ||
@@ -65,7 +99,7 @@ export function decryptSecret(
     const decipher = createDecipheriv(ALGORITHM, key, iv, {
       authTagLength: TAG_BYTES,
     });
-    decipher.setAAD(Buffer.from(context));
+    decipher.setAAD(additionalData(keyId, context));
     decipher.setAuthTag(tag);
     // final() throws when the tag does not match: wrong key, wrong context
     // or changed bytes.
@@ -76,4 +110,10 @@ export function decryptSecret(
   } catch {
     throw decryptionFailed();
   }
+}
+
+// True when the payload was encrypted with a key other than keyring.current,
+// so the caller should decrypt it and encrypt it again during key rotation.
+export function needsReencryption(payload: string, keyring: Keyring): boolean {
+  return payload.split(":")[1] !== keyring.current;
 }
