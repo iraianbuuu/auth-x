@@ -22,15 +22,15 @@ npm test
 
 ## Scripts
 
-| Command | What it does |
-|---|---|
-| `npm test` | Runs the tests with Node's built-in test runner |
-| `npm run coverage` | Runs the tests with a coverage report for `src`; fails below 95% lines, branches or functions |
-| `npm run typecheck` | Type-checks `src`, `tests` and `examples` without emitting files |
-| `npm run lint` | Checks linting and formatting with Biome |
-| `npm run format` | Fixes formatting and safe lint issues |
-| `npm run build` | Compiles `src` to `dist` |
-| `npm run dev` | Runs the demo in `examples/demo.ts` |
+| Command             | What it does                                                                                  |
+| ------------------- | --------------------------------------------------------------------------------------------- |
+| `npm test`          | Runs the tests with Node's built-in test runner                                               |
+| `npm run coverage`  | Runs the tests with a coverage report for `src`; fails below 95% lines, branches or functions |
+| `npm run typecheck` | Type-checks `src`, `tests` and `examples` without emitting files                              |
+| `npm run lint`      | Checks linting and formatting with Biome                                                      |
+| `npm run format`    | Fixes formatting and safe lint issues                                                         |
+| `npm run build`     | Compiles `src` to `dist`                                                                      |
+| `npm run dev`       | Runs the demo in `examples/demo.ts`                                                           |
 
 ## Install
 
@@ -103,9 +103,9 @@ Case, spaces and dashes are ignored, so `k7qm 9xrt` matches `K7QM-9XRT`.
 ### Rotate the encryption key
 
 Every payload records the ID of the key that encrypted it (`v1:2026-10:...`), so old and new keys can be used side by side:
-
 1. Add the new key and make it `current`. Keep the old key in `keys`.
 2. At login, re-encrypt secrets that still use an old key:
+
    ```ts
    if (needsReencryption(user.totpSecret, keyring)) {
      const plain = decryptSecret(user.totpSecret, keyring, `user:${user.id}`);
@@ -120,7 +120,12 @@ Every payload records the ID of the key that encrypted it (`v1:2026-10:...`), so
 `generateSecret`, `createOtpAuthUri`, `parseOtpAuthUri`, `generateTotp`, `encodeBase32` and `decodeBase32` are also exported, for apps that build their own enrollment flow:
 
 ```ts
-import { createOtpAuthUri, decodeBase32, generateSecret, generateTotp } from "auth-x";
+import {
+  createOtpAuthUri,
+  decodeBase32,
+  generateSecret,
+  generateTotp,
+} from "auth-x";
 
 const secret = generateSecret(); // 160-bit key as 32 base32 characters
 const uri = createOtpAuthUri({ secret, issuer: "Acme Co", account: "alice" });
@@ -135,11 +140,11 @@ generateTotp(decodeBase32(secret), {
 
 ### Options
 
-| Option | Values | Default |
-|---|---|---|
-| `algorithm` | `"SHA1"`, `"SHA256"`, `"SHA512"` | `"SHA1"` |
-| `digits` | `6` or `8` | `6` |
-| `period` | positive whole number of seconds | `30` |
+| Option      | Values                                       | Default      |
+| ----------- | -------------------------------------------- | ------------ |
+| `algorithm` | `"SHA1"`, `"SHA256"`, `"SHA512"`             | `"SHA1"`     |
+| `digits`    | `6` or `8`                                   | `6`          |
+| `period`    | positive whole number of seconds             | `30`         |
 | `timestamp` | Unix time in whole seconds, not milliseconds | current time |
 
 Most authenticator apps only support the defaults. `createOtpAuthUri` writes any non-default option into the URI, so the app and the server use the same settings.
@@ -148,12 +153,12 @@ Most authenticator apps only support the defaults. `createOtpAuthUri` writes any
 
 Invalid input throws an `OtpError` with a `code`:
 
-| Code | Thrown when |
-|---|---|
-| `INVALID_OPTIONS` | An option is outside the values above, or a timestamp or counter is negative, fractional or not a number |
-| `INVALID_SECRET` | A base32 secret has invalid characters, an impossible length or non-zero padding bits, or the key is shorter than 16 bytes |
-| `INVALID_URI` | An `otpauth://` URI is malformed, the account is empty, or the issuer or account contains `:` |
-| `INVALID_KEY` | The keyring's `current` key is missing, a key is not 32 bytes, or a key ID is invalid |
+| Code                | Thrown when                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `INVALID_OPTIONS`   | An option is outside the values above, or a timestamp or counter is negative, fractional or not a number                                |
+| `INVALID_SECRET`    | A base32 secret has invalid characters, an impossible length or non-zero padding bits, or the key is shorter than 16 bytes              |
+| `INVALID_URI`       | An `otpauth://` URI is malformed, the account is empty, or the issuer or account contains `:`                                           |
+| `INVALID_KEY`       | The keyring's `current` key is missing, a key is not 32 bytes, or a key ID is invalid                                                   |
 | `DECRYPTION_FAILED` | An encrypted secret was changed, is malformed, names a key ID that is not in the keyring, or is decrypted with the wrong key or context |
 
 ```ts
@@ -192,7 +197,6 @@ tests/            one test file per module; imports use the @/ alias for src/
 ## Testing
 
 Expected values in the tests come from the RFCs, not from running this code:
-
 - RFC 4226 Appendix D: HOTP codes for counters 0 to 9
 - RFC 6238 Appendix B: TOTP codes for SHA-1, SHA-256 and SHA-512 at six timestamps
 - RFC 4648 Section 10: base32 encodings of `f` through `foobar`
