@@ -15,6 +15,9 @@
     "src"
   ],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "node --import tsx --test \"tests/**/*.test.ts\"",
     "coverage": "node --import tsx --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-lines=95 --test-coverage-branches=95 --test-coverage-functions=95 \"tests/**/*.test.ts\"",
