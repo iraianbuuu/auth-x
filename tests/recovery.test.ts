@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { test } from "node:test";
-import {
-  generateRecoveryCodes,
-  verifyRecoveryCode,
-} from "../src/auth/recovery.ts";
+import { generateRecoveryCodes, verifyRecoveryCode } from "@/auth/recovery.ts";
 import { otpError } from "./helpers.ts";
 
 const FORMAT = /^[A-Z2-7]{4}-[A-Z2-7]{4}$/;

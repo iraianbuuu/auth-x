@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { generateHotp } from "../src/auth/hotp.ts";
+import { generateHotp } from "@/auth/hotp.ts";
 import { otpError } from "./helpers.ts";
 
 // RFC 4226 Appendix D

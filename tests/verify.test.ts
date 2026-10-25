@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { verifyTotp } from "../src/auth/totp.ts";
+import { verifyTotp } from "@/auth/totp.ts";
 import { otpError, rfcKey } from "./helpers.ts";
 
 // RFC 6238 Appendix B (SHA-1, 6 digits). These two vectors sit in

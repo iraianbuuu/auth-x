@@ -1,5 +1,5 @@
-import { OtpError, type OtpErrorCode } from "../src/auth/errors.ts";
-import type { HashAlgorithm } from "../src/auth/types.ts";
+import { OtpError, type OtpErrorCode } from "@/auth/errors.ts";
+import type { HashAlgorithm } from "@/auth/types.ts";
 
 export function otpError(code: OtpErrorCode) {
   return (error: unknown): boolean =>

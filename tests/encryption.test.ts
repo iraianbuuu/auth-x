@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { test } from "node:test";
-import { decryptSecret, encryptSecret } from "../src/auth/encryption.ts";
+import { decryptSecret, encryptSecret } from "@/auth/encryption.ts";
 import { otpError } from "./helpers.ts";
 
 const KEY = randomBytes(32);

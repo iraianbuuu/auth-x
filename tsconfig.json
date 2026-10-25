@@ -4,7 +4,9 @@
     // File Layout (build output is set in tsconfig.build.json)
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
+    // "@/x.ts" maps to "src/x.ts". Use it in tests and examples only: the
+    // build does not rewrite it, so files in src use relative imports.
+    "paths": { "@/*": ["./src/*"] },
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
     "module": "nodenext",
@@ -40,5 +42,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "include": ["src", "tests"]
+  "include": ["src", "tests", "examples"]
 }

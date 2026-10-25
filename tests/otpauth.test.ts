@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createOtpAuthUri, parseOtpAuthUri } from "../src/auth/otpauth.ts";
-import { DEFAULTS, type TotpOptions } from "../src/auth/types.ts";
+import { createOtpAuthUri, parseOtpAuthUri } from "@/auth/otpauth.ts";
+import { DEFAULTS, type TotpOptions } from "@/auth/types.ts";
 import { otpError } from "./helpers.ts";
 
 const SECRET = "JBSWY3DPEHPK3PXP";

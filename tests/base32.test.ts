@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { decodeBase32, encodeBase32 } from "../src/auth/base32.ts";
+import { decodeBase32, encodeBase32 } from "@/auth/base32.ts";
 import { otpError } from "./helpers.ts";
 
 // RFC 4648 Section 10, without padding

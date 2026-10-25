@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { decodeBase32 } from "../src/auth/base32.ts";
-import { createEnrollment } from "../src/auth/enrollment.ts";
-import { parseOtpAuthUri } from "../src/auth/otpauth.ts";
-import { toQrDataUrl } from "../src/auth/qrcode.ts";
-import { generateTotp, verifyTotp } from "../src/auth/totp.ts";
-import { DEFAULTS } from "../src/auth/types.ts";
+import { decodeBase32 } from "@/auth/base32.ts";
+import { createEnrollment } from "@/auth/enrollment.ts";
+import { parseOtpAuthUri } from "@/auth/otpauth.ts";
+import { toQrDataUrl } from "@/auth/qrcode.ts";
+import { generateTotp, verifyTotp } from "@/auth/totp.ts";
+import { DEFAULTS } from "@/auth/types.ts";
 
 const PNG_DATA_URL = "data:image/png;base64,";
 

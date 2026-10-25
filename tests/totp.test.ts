@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { generateTotp } from "../src/auth/totp.ts";
-import type { HashAlgorithm, TotpOptions } from "../src/auth/types.ts";
+import { generateTotp } from "@/auth/totp.ts";
+import type { HashAlgorithm, TotpOptions } from "@/auth/types.ts";
 import { otpError, rfcKey } from "./helpers.ts";
 
 const RFC_6238: [number, HashAlgorithm, string][] = [
