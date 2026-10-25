@@ -25,6 +25,7 @@ npm test
 | Command | What it does |
 |---|---|
 | `npm test` | Runs the tests with Node's built-in test runner |
+| `npm run coverage` | Runs the tests with a coverage report for `src`; fails below 95% lines, branches or functions |
 | `npm run typecheck` | Type-checks `src`, `tests` and `examples` without emitting files |
 | `npm run lint` | Checks linting and formatting with Biome |
 | `npm run format` | Fixes formatting and safe lint issues |
@@ -36,11 +37,12 @@ npm test
 Build a tarball and install it in the consuming app:
 
 ```bash
-npm pack                                    # in auth-x, creates auth-x-1.0.0.tgz
-npm install /path/to/auth-x/auth-x-1.0.0.tgz  # in the app
+git checkout v0.1.0                          # in auth-x, pick a release
+npm pack                                     # creates auth-x-0.1.0.tgz
+npm install /path/to/auth-x/auth-x-0.1.0.tgz  # in the app
 ```
 
-`npm pack` runs the build first. Everything is imported from the package root; internal modules are not reachable.
+`npm pack` runs the build first. Releases are git tags; see [CHANGELOG.md](CHANGELOG.md). Everything is imported from the package root; internal modules are not reachable.
 
 ## Usage
 
@@ -197,8 +199,9 @@ Expected values in the tests come from the RFCs, not from running this code:
 - [x] Secret encryption (AES-256-GCM) and recovery codes
 - [x] Public entry point and packaging
 - [x] CI for typecheck, lint, tests, build and `npm audit`
-- [ ] Test coverage report
-- [ ] Semver tags and a changelog
+- [x] Test coverage report, enforced in CI
+- [x] Semver tags and a changelog
+- [ ] Integration into the object store
 
 ## License
 

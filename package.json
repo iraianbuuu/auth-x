@@ -1,6 +1,6 @@
 {
   "name": "auth-x",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "TOTP two-factor authentication for Node: enrollment, verification, secret encryption and recovery codes",
   "exports": {
