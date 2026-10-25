@@ -37,12 +37,12 @@ npm test
 Build a tarball and install it in the consuming app:
 
 ```bash
-git checkout v0.1.0                          # in auth-x, pick a release
-npm pack                                     # creates auth-x-0.1.0.tgz
-npm install /path/to/auth-x/auth-x-0.1.0.tgz  # in the app
+git checkout v0.2.0                          # in auth-x, pick a release
+npm pack                                     # creates auth-x-0.2.0.tgz
+npm install /path/to/auth-x/auth-x-0.2.0.tgz  # in the app
 ```
 
-`npm pack` runs the build first. Releases are git tags; see [CHANGELOG.md](CHANGELOG.md). Everything is imported from the package root; internal modules are not reachable.
+`npm pack` runs the build first. Releases are git tags; see [CHANGELOG.md](CHANGELOG.md). Everything is imported from the package root; internal modules are not reachable. The package has no runtime dependencies.
 
 ## Usage
 
@@ -51,19 +51,24 @@ npm install /path/to/auth-x/auth-x-0.1.0.tgz  # in the app
 ```ts
 import { createEnrollment, encryptSecret, generateRecoveryCodes } from "auth-x";
 
-const { secret, qrDataUrl } = await createEnrollment({
+const keyring = {
+  current: "2026-10",
+  keys: { "2026-10": Buffer.from(process.env.TOTP_KEY_2026_10, "base64") },
+};
+
+const { secret, uri } = createEnrollment({
   account: "alice@example.com",
   issuer: "Acme Co",
 });
 const { codes, hashes } = generateRecoveryCodes(); // 10 codes like "K7QM-9XRT"
 
-user.totpSecret = encryptSecret(secret, ENCRYPTION_KEY, `user:${user.id}`);
+user.totpSecret = encryptSecret(secret, keyring, `user:${user.id}`);
 user.recoveryHashes = hashes;
 ```
 
-Show `qrDataUrl` in an `<img>` tag and show `codes` once; store neither. Turn 2FA on only after the user enters one correct code.
+Render `uri` as a QR code for the user to scan, with any QR library (for example `qrcode` on the server or a QR component in the browser). Show `codes` once; store neither. Turn 2FA on only after the user enters one correct code.
 
-`ENCRYPTION_KEY` is a 32-byte `Buffer` from a secrets manager or environment variable, never from the database. The third argument binds the payload to the user, so a payload copied into another user's row fails to decrypt.
+Each key in the keyring is a 32-byte `Buffer` from a secrets manager or environment variable, never from the database. `current` names the key that encrypts new secrets; key IDs are 1 to 32 letters, digits, `-` or `_`. The third argument binds the payload to the user, so a payload copied into another user's row fails to decrypt.
 
 ### Verify a code at login
 
@@ -71,7 +76,7 @@ Show `qrDataUrl` in an `<img>` tag and show `codes` once; store neither. Turn 2F
 import { decodeBase32, decryptSecret, verifyTotp } from "auth-x";
 
 const key = decodeBase32(
-  decryptSecret(user.totpSecret, ENCRYPTION_KEY, `user:${user.id}`),
+  decryptSecret(user.totpSecret, keyring, `user:${user.id}`),
 );
 const step = verifyTotp(key, typedCode, {
   afterStep: user.lastUsedStep, // omit on the first login
@@ -84,7 +89,7 @@ if (step === null) {
 }
 ```
 
-`verifyTotp` accepts the previous, current and next 30-second step by default (`window: 1`), which allows for clock drift and typing time. It returns the matched step, or `null`.
+`verifyTotp` accepts the previous, current and next 30-second step by default (`window: 1`), which allows for clock drift and typing time. `window` can be at most 10. It returns the matched step, or `null`.
 
 ### Use a recovery code
 
@@ -99,9 +104,24 @@ if (index !== -1) {
 
 Case, spaces and dashes are ignored, so `k7qm 9xrt` matches `K7QM-9XRT`.
 
+### Rotate the encryption key
+
+Every payload records the ID of the key that encrypted it (`v1:2026-10:...`), so old and new keys can be used side by side:
+
+1. Add the new key and make it `current`. Keep the old key in `keys`.
+2. At login, re-encrypt secrets that still use an old key:
+   ```ts
+   if (needsReencryption(user.totpSecret, keyring)) {
+     const plain = decryptSecret(user.totpSecret, keyring, `user:${user.id}`);
+     user.totpSecret = encryptSecret(plain, keyring, `user:${user.id}`);
+   }
+   ```
+3. Count the rows left on the old key, for example `WHERE totp_secret LIKE 'v1:2026-10:%'`, and re-encrypt them in a batch if needed.
+4. When the count is 0, remove the old key from `keys`.
+
 ### Lower-level functions
 
-`generateSecret`, `createOtpAuthUri`, `parseOtpAuthUri`, `toQrDataUrl`, `generateTotp`, `encodeBase32` and `decodeBase32` are also exported, for apps that build their own enrollment flow:
+`generateSecret`, `createOtpAuthUri`, `parseOtpAuthUri`, `generateTotp`, `encodeBase32` and `decodeBase32` are also exported, for apps that build their own enrollment flow:
 
 ```ts
 import { createOtpAuthUri, decodeBase32, generateSecret, generateTotp } from "auth-x";
@@ -137,8 +157,8 @@ Invalid input throws an `OtpError` with a `code`:
 | `INVALID_OPTIONS` | An option is outside the values above, or a timestamp or counter is negative, fractional or not a number |
 | `INVALID_SECRET` | A base32 secret has invalid characters, an impossible length or non-zero padding bits, or the key is shorter than 16 bytes |
 | `INVALID_URI` | An `otpauth://` URI is malformed, the account is empty, or the issuer or account contains `:` |
-| `INVALID_KEY` | An encryption key is not 32 bytes |
-| `DECRYPTION_FAILED` | An encrypted secret was changed, is malformed, or is decrypted with the wrong key or context |
+| `INVALID_KEY` | The keyring's `current` key is missing, a key is not 32 bytes, or a key ID is invalid |
+| `DECRYPTION_FAILED` | An encrypted secret was changed, is malformed, names a key ID that is not in the keyring, or is decrypted with the wrong key or context |
 
 ```ts
 import { OtpError } from "auth-x";
@@ -165,9 +185,8 @@ src/
     base32.ts     base32 encode and decode (RFC 4648)
     secret.ts     random secret generation
     otpauth.ts    otpauth:// URI build and parse
-    qrcode.ts     URI to PNG data URL
-    enrollment.ts secret, URI and QR code in one call
-    encryption.ts AES-256-GCM secret encryption
+    enrollment.ts secret and URI in one call
+    encryption.ts AES-256-GCM secret encryption with key IDs
     recovery.ts   one-time recovery codes
 examples/
   demo.ts         enrollment, encryption, verification and recovery
@@ -187,7 +206,7 @@ Expected values in the tests come from the RFCs, not from running this code:
 - Never compare a user's code with `===`; it leaks timing information. `verifyTotp` compares in constant time.
 - Store the step `verifyTotp` returns and pass it back as `afterStep`. Without it, a code can be used again until it expires.
 - TOTP secrets cannot be hashed like passwords because the server needs the original to compute codes, which is why they are encrypted instead.
-- Store TOTP secrets only through `encryptSecret`, and keep the 32-byte key outside the database. Store recovery codes only as the hashes `generateRecoveryCodes` returns.
+- Store TOTP secrets only through `encryptSecret`, and keep the keys outside the database. Rotate keys with a new key ID rather than replacing a key in place. Store recovery codes only as the hashes `generateRecoveryCodes` returns.
 - Pass `timestamp` in seconds. Passing `Date.now()` (milliseconds) produces codes no authenticator app will accept.
 
 ## Roadmap
@@ -195,13 +214,12 @@ Expected values in the tests come from the RFCs, not from running this code:
 - [x] Configurable algorithm, digits and period
 - [x] `OtpError` codes and input validation
 - [x] `verifyTotp` with a clock-drift window and replay protection
-- [x] Non-default options in `otpauth://` URIs, QR codes as data URLs, enrollment helper
-- [x] Secret encryption (AES-256-GCM) and recovery codes
+- [x] Non-default options in `otpauth://` URIs and an enrollment helper
+- [x] Secret encryption (AES-256-GCM) with key rotation, and recovery codes
 - [x] Public entry point and packaging
 - [x] CI for typecheck, lint, tests, build and `npm audit`
 - [x] Test coverage report, enforced in CI
 - [x] Semver tags and a changelog
-- [ ] Integration into the object store
 
 ## License
 

@@ -2,6 +2,27 @@
 
 This project follows [Semantic Versioning](https://semver.org). Until 1.0.0, a minor version bump (0.1 to 0.2) can contain breaking changes.
 
+## 0.2.0 - 2026-10-25
+
+### Changed (breaking)
+
+- `encryptSecret` and `decryptSecret` take a `Keyring` (`{ current, keys }`) instead of a single key. Payloads now record the key ID: `v1:<keyId>:<iv>:<tag>:<ciphertext>`. The version and key ID are authenticated, so editing either makes decryption fail. Payloads from 0.1.0 do not decrypt.
+- `createEnrollment` returns `{ secret, uri }` and is synchronous. Render the URI as a QR code in the app.
+- `verifyTotp` rejects a `window` above 10.
+
+### Added
+
+- `needsReencryption` tells whether a payload was encrypted with a key other than the keyring's current one, for key rotation.
+
+### Removed
+
+- `toQrDataUrl` and the `qrcode` dependency. The package has no runtime dependencies.
+
+### Fixed
+
+- The package ships `src`, so the source maps in `dist` resolve.
+- `npm run build` clears `dist` first, so deleted modules are not packed.
+
 ## 0.1.0 - 2026-10-25
 
 First release.
