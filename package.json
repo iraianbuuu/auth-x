@@ -1,5 +1,5 @@
 {
-  "name": "auth-x",
+  "name": "@iraianbuuu/auth-x",
   "version": "0.2.1",
   "type": "module",
   "description": "TOTP two-factor authentication for Node: enrollment, verification, secret encryption and recovery codes",

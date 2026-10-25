@@ -4,7 +4,7 @@ This project follows [Semantic Versioning](https://semver.org). Until 1.0.0, a m
 
 ## 0.2.1 - 2026-10-25
 
-First version published to npm. No API changes.
+First version published to npm, as `@iraianbuuu/auth-x` (npm rejected `auth-x` as too similar to an existing package). No API changes.
 
 ### Added
 

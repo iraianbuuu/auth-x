@@ -35,7 +35,7 @@ npm test
 ## Install
 
 ```bash
-npm install auth-x
+npm install @iraianbuuu/auth-x
 ```
 
 Everything is imported from the package root; internal modules are not reachable. The package has no runtime dependencies. Releases are listed in [CHANGELOG.md](CHANGELOG.md).
@@ -45,7 +45,11 @@ Everything is imported from the package root; internal modules are not reachable
 ### Enroll a user
 
 ```ts
-import { createEnrollment, encryptSecret, generateRecoveryCodes } from "auth-x";
+import {
+  createEnrollment,
+  encryptSecret,
+  generateRecoveryCodes,
+} from "@iraianbuuu/auth-x";
 
 const keyring = {
   current: "2026-10",
@@ -69,7 +73,7 @@ Each key in the keyring is a 32-byte `Buffer` from a secrets manager or environm
 ### Verify a code at login
 
 ```ts
-import { decodeBase32, decryptSecret, verifyTotp } from "auth-x";
+import { decodeBase32, decryptSecret, verifyTotp } from "@iraianbuuu/auth-x";
 
 const key = decodeBase32(
   decryptSecret(user.totpSecret, keyring, `user:${user.id}`),
@@ -90,7 +94,7 @@ if (step === null) {
 ### Use a recovery code
 
 ```ts
-import { verifyRecoveryCode } from "auth-x";
+import { verifyRecoveryCode } from "@iraianbuuu/auth-x";
 
 const index = verifyRecoveryCode(typedCode, user.recoveryHashes);
 if (index !== -1) {
@@ -125,7 +129,7 @@ import {
   decodeBase32,
   generateSecret,
   generateTotp,
-} from "auth-x";
+} from "@iraianbuuu/auth-x";
 
 const secret = generateSecret(); // 160-bit key as 32 base32 characters
 const uri = createOtpAuthUri({ secret, issuer: "Acme Co", account: "alice" });
@@ -162,7 +166,7 @@ Invalid input throws an `OtpError` with a `code`:
 | `DECRYPTION_FAILED` | An encrypted secret was changed, is malformed, names a key ID that is not in the keyring, or is decrypted with the wrong key or context |
 
 ```ts
-import { OtpError } from "auth-x";
+import { OtpError } from "@iraianbuuu/auth-x";
 
 try {
   generateTotp(decodeBase32(userInput));
