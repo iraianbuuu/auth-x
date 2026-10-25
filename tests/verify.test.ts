@@ -87,7 +87,7 @@ test("verifyTotp honors algorithm and digits", () => {
 });
 
 test("verifyTotp rejects an invalid window", () => {
-  for (const window of [-1, 1.5, Number.NaN]) {
+  for (const window of [-1, 1.5, Number.NaN, 11]) {
     assert.throws(
       () => verifyTotp(key, CODE_A, { timestamp: TIME_A, window }),
       otpError("INVALID_OPTIONS"),

@@ -7,6 +7,9 @@ type TotpInput = Partial<TotpOptions> & { timestamp?: number };
 
 type VerifyInput = TotpInput & { window?: number; afterStep?: number };
 
+// Each extra step is two more HMACs and widens the replay window.
+const MAX_WINDOW = 10;
+
 function timeStep(timestamp: number, period: number): number {
   if (!Number.isSafeInteger(timestamp) || timestamp < 0) {
     throw new OtpError(
@@ -36,10 +39,10 @@ export function verifyTotp(
   } = input;
   const resolved = resolveOptions(options);
 
-  if (!Number.isSafeInteger(window) || window < 0) {
+  if (!Number.isSafeInteger(window) || window < 0 || window > MAX_WINDOW) {
     throw new OtpError(
       "INVALID_OPTIONS",
-      "Window must be a non-negative integer",
+      `Window must be an integer from 0 to ${MAX_WINDOW}`,
     );
   }
   if (!Number.isSafeInteger(afterStep)) {
