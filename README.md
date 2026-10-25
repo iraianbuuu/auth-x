@@ -34,15 +34,11 @@ npm test
 
 ## Install
 
-Build a tarball and install it in the consuming app:
-
 ```bash
-git checkout v0.2.0                          # in auth-x, pick a release
-npm pack                                     # creates auth-x-0.2.0.tgz
-npm install /path/to/auth-x/auth-x-0.2.0.tgz  # in the app
+npm install auth-x
 ```
 
-`npm pack` runs the build first. Releases are git tags; see [CHANGELOG.md](CHANGELOG.md). Everything is imported from the package root; internal modules are not reachable. The package has no runtime dependencies.
+Everything is imported from the package root; internal modules are not reachable. The package has no runtime dependencies. Releases are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Usage
 
@@ -208,6 +204,16 @@ Expected values in the tests come from the RFCs, not from running this code:
 - TOTP secrets cannot be hashed like passwords because the server needs the original to compute codes, which is why they are encrypted instead.
 - Store TOTP secrets only through `encryptSecret`, and keep the keys outside the database. Rotate keys with a new key ID rather than replacing a key in place. Store recovery codes only as the hashes `generateRecoveryCodes` returns.
 - Pass `timestamp` in seconds. Passing `Date.now()` (milliseconds) produces codes no authenticator app will accept.
+
+## Releasing
+
+1. Add the changes to `CHANGELOG.md` and bump `version` in `package.json`.
+2. Commit, then tag and push: `git tag -a v0.3.0 -m "auth-x 0.3.0" && git push origin v0.3.0`.
+3. The Publish workflow checks the tag matches `package.json`, runs the checks, and publishes to npm with provenance.
+
+## Reporting security issues
+
+See [SECURITY.md](SECURITY.md). Do not open a public issue.
 
 ## Roadmap
 

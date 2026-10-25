@@ -2,6 +2,18 @@
 
 This project follows [Semantic Versioning](https://semver.org). Until 1.0.0, a minor version bump (0.1 to 0.2) can contain breaking changes.
 
+## 0.2.1 - 2026-10-25
+
+First version published to npm. No API changes.
+
+### Added
+
+- Doc comments on every public function and type, shown in editor hovers.
+- `SECURITY.md` with how to report a vulnerability privately.
+- npm keywords, homepage, bugs link and `sideEffects: false`.
+- CI installs the packed tarball and imports it; Dependabot updates dependencies and actions weekly.
+- A Publish workflow that releases version tags to npm with provenance.
+
 ## 0.2.0 - 2026-10-25
 
 ### Changed (breaking)
