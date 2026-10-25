@@ -2,6 +2,15 @@
 
 This project follows [Semantic Versioning](https://semver.org). Until 1.0.0, a minor version bump (0.1 to 0.2) can contain breaking changes.
 
+## 0.2.2 - 2026-10-25
+
+First release published from CI through npm trusted publishing, with provenance. No library changes.
+
+### Changed
+
+- The publish workflow authenticates with OIDC instead of a token and relies on npm's automatic provenance.
+- CI and publishing use `actions/checkout` and `actions/setup-node` v7.
+
 ## 0.2.1 - 2026-10-25
 
 First version published to npm, as `@iraianbuuu/auth-x` (npm rejected `auth-x` as too similar to an existing package). No API changes.
