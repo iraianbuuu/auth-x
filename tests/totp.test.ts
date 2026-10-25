@@ -2,14 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { generateTotp } from "../src/auth/totp.ts";
 import type { HashAlgorithm, TotpOptions } from "../src/auth/types.ts";
-import { otpError } from "./helpers.ts";
-
-// RFC 6238 Appendix B keys: the ASCII digits "1234567890" repeated to
-// 20 bytes for SHA-1, 32 bytes for SHA-256 and 64 bytes for SHA-512.
-function rfcKey(algorithm: HashAlgorithm): Buffer {
-  const length = algorithm === "SHA1" ? 20 : algorithm === "SHA256" ? 32 : 64;
-  return Buffer.from("1234567890".repeat(7).slice(0, length));
-}
+import { otpError, rfcKey } from "./helpers.ts";
 
 const RFC_6238: [number, HashAlgorithm, string][] = [
   [59, "SHA1", "94287082"],
