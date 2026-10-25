@@ -22,4 +22,17 @@ jobs:
       - run: npm run lint
       - run: npm run coverage
       - run: npm run build
+      - name: Install the packed tarball and import it
+        run: |
+          npm pack --pack-destination "$RUNNER_TEMP"
+          mkdir "$RUNNER_TEMP/consumer"
+          cd "$RUNNER_TEMP/consumer"
+          npm init -y > /dev/null
+          npm install "$RUNNER_TEMP"/auth-x-*.tgz
+          node --input-type=module -e '
+            import { createEnrollment, decodeBase32, generateTotp, verifyTotp } from "auth-x";
+            const key = decodeBase32(createEnrollment({ account: "ci" }).secret);
+            if (verifyTotp(key, generateTotp(key)) === null) process.exit(1);
+            console.log("packed tarball works");
+          '
       - run: npm audit --audit-level=high
