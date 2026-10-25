@@ -51,7 +51,7 @@ export function verifyTotp(
   if (!new RegExp(`^\\d{${resolved.digits}}$`).test(code)) {
     return null;
   }
-  
+
   const given = Buffer.from(code);
 
   for (let step = current - window; step <= current + window; step++) {
