@@ -33,3 +33,7 @@ jobs:
           fi
       - if: steps.npm.outputs.published != 'true'
         run: npm publish --provenance
+        env:
+          # Only for a first publish, before trusted publishing can be set up.
+          # Without the secret, npm authenticates through trusted publishing.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
