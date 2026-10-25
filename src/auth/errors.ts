@@ -1,4 +1,4 @@
-export type OtpErrorCode = "INVALID_OPTIONS" | "INVALID_SECRET";
+export type OtpErrorCode = "INVALID_OPTIONS" | "INVALID_SECRET" | "INVALID_URI";
 
 export class OtpError extends Error {
   readonly code: OtpErrorCode;
