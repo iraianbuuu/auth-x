@@ -2,6 +2,8 @@ import { createHmac } from "node:crypto";
 import { OtpError } from "./errors.ts";
 import { resolveOptions, type TotpOptions } from "./types.ts";
 
+const MIN_KEY_BYTES = 16;
+
 export function generateHotp(
   key: Buffer,
   counter: number,
@@ -9,8 +11,12 @@ export function generateHotp(
 ): string {
   const { algorithm, digits } = resolveOptions(options);
 
-  if (key.length === 0) {
-    throw new OtpError("INVALID_SECRET", "Key must not be empty");
+  // RFC 4226 section 4 requires a shared secret of at least 128 bits.
+  if (key.length < MIN_KEY_BYTES) {
+    throw new OtpError(
+      "INVALID_SECRET",
+      `Key must be at least ${MIN_KEY_BYTES} bytes`,
+    );
   }
   if (!Number.isSafeInteger(counter) || counter < 0) {
     throw new OtpError(
