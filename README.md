@@ -4,7 +4,7 @@ A TypeScript library for time-based one-time passwords (TOTP, RFC 6238), the six
 
 ## Status
 
-Enrollment, code verification, secret encryption and recovery codes work, and the TOTP code is tested against the RFC test vectors. The package installs from a tarball or git; it is not on npm. See [Roadmap](#roadmap) for what is left.
+Enrollment, code verification, secret encryption and recovery codes work, and the TOTP code is tested against the RFC test vectors. The package is published on npm as `@iraianbuuu/auth-x`. See [Roadmap](#roadmap) for what is left.
 
 ## Requirements
 
